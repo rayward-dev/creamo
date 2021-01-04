@@ -4,17 +4,17 @@ import Link from 'next/link'
 const Layout = (props) => {
   return (
     <>
-      <div class="layout-wrap">
-        <div class="border-box-bottom">
-          <div class="header-box">
-            <div class="flex-wrap-head">
+      <div className="layout-wrap">
+        <div className="border-box-bottom">
+          <div className="header-box">
+            <div className="flex-wrap-head">
               <Link href="/">
-                <div class="header-title">
+                <div className="header-title">
                   CREAMO
                 </div>
               </Link>
               <Link href="/">
-                <div class="top-back">
+                <div className="top-back">
                   一覧に戻る
                 </div>
               </Link>
@@ -24,23 +24,23 @@ const Layout = (props) => {
 
         {props.children}
 
-        <div class="footer-back">
-          <div class="footer-inbox">
-            <div class="flex-wrap-foot">
+        <div className="footer-back">
+          <div className="footer-inbox">
+            <div className="flex-wrap-foot">
               <Link href="https://rayward.jp/">
-                <a target="_blank" class="company">
+                <a target="_blank" className="company">
                   運営会社
                 </a>
               </Link>
-              <div class="space-box50w">
+              <div className="space-box50w">
               </div>
               <Link href="https://rayward.jp/wp-content/themes/rayward/privacy.html">
-                <a target="_blank" class="policy">
+                <a target="_blank" className="policy">
                   プライバシーポリシー 
                 </a>
               </Link>
             </div>
-            <div class="copy">
+            <div className="copy">
               ©️ 2021 CREAMO all rights reserved
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { db } from '../lib/db';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/layout'

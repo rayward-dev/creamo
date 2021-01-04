@@ -1,31 +1,112 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
+import { db } from '../lib/db';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/layout'
+import firebase from '../lib/db';
+import { useRouter } from 'next/router'
 
 const App = () => {
-  // 作成したtodoを入れておくためのstate
-  const [todos, setTodos] = useState([]);
-  // フォームに入力された値をtodoに登録するまでに入れておくためのstate
-  const [tmpTodo, setTmpTodo] = useState("");
+  
+  // 変数定義
+  const [user, setUser] = useState("");
+  const [result, setResult] = useState([]);
+  console.log(user);
+  console.log(result);
 
-  const addTodo = () => {
-    // formの内容が空白の場合はalertを出す
-    if (tmpTodo === "") {
-      alert("文字を入力してください");
-      return;
-    }
-    setTodos([...todos, tmpTodo]);
-    setTmpTodo("");
-  };
+  // FirebaseAuthの初期化
+  const auth = firebase.auth();
+  // Routerのインスタンス生成
+  const router = useRouter();
 
-  // todoを削除する処理
-  const deleteTodo = index => {
-    const newTodos = todos.filter((todo, todoIndex) => {
-      return index !== todoIndex;
-    });
-    setTodos(newTodos);
-  };
+  // ページ表示と同時に発火
+  useEffect(() => {
+    // 変数定義
+
+    // 一覧情報を取得
+    mainIndex();
+    authCheck();
+
+    // ログイン情報とCurrentUserを取得
+    // auth.onAuthStateChanged(user => {
+    //   if (user) {
+    //     console.log("サインインしてます");
+    //     userBox = auth.currentUser;
+    //   }
+    //   else {
+    //     console.log("サインインしてません");
+    //     setUser(auth.currentUser);
+    //   }
+    // })
+  },[]);
+
+  // ログイン情報とCurrentUserを取得
+  const authCheck = () => {
+    (async () => {
+      try {
+        var userBox = "";
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            console.log("サインインしてます");
+            userBox = auth.currentUser;
+            setUser(userBox);
+            return userBox;
+          }
+          else {
+            console.log("サインインしてません");
+            userBox = auth.currentUser;
+            setUser(userBox);
+            return userBox;
+          }
+        })
+      } catch (err) {
+        console.log(`Error: ${JSON.stringify(err)}`)
+      }
+    })()
+  }
+
+  // firestoreからデータ取得
+  const mainIndex = () => {
+    (async () => {
+      try {
+    
+        const querySnapshot = await db.collection('posts').get() 
+        
+        // とりあえずまとめて取得
+        // var box = []
+        // box = querySnapshot.docs.map(postDoc => JSON.stringify(postDoc.data()))
+        // console.log(box)
+        // setResult(box)
+
+        // 配列を整理して取得
+        let data = []
+        querySnapshot.forEach((doc) =>
+        {
+          data.push(
+            Object.assign({
+              id: doc.id
+            },doc.data())
+          )
+        })
+        // console.log(data)
+        setResult(data)
+        return data
+        
+        // 公式の取得
+        // querySnapshot.forEach((postDoc) => {
+        //   console.log(JSON.stringify(postDoc.data()))
+        // })
+      } catch (err) {
+        console.log(`Error: ${JSON.stringify(err)}`)
+      }
+    })()
+  }
+
+  // ログアウトメソッド
+  const logout = () => {
+    firebase.auth().signOut()
+    router.push('/');
+  }
 
   return (
     <>
@@ -36,41 +117,40 @@ const App = () => {
       <Layout>
       <div className="container">
         <h1>一覧ページ</h1>
-        <Link href="/form/signup">
+        <Link href="/signup">
           <a>新規登録ページ</a>
         </Link>
-        <Link href="/form/login">
+        <Link href="/login">
           <a>ログインページ</a>
         </Link>
-        <Link href="/form/portedit">
+        <Link href='/portedit' passHref>
           <a>ポートフォリオ編集ページ</a>
         </Link>
-        <Link href="/form/post">
+        <Link href='/post' passHref>
           <a>投稿ページ</a>
         </Link>
-        <div className="todoform">
-          <input
-            type="text"
-            name="todo"
-            // formの入力値をtmpTodoで持っておく
-            onChange={e => setTmpTodo(e.target.value)}
-            value={tmpTodo}
-          />
-          <button onClick={addTodo}>Add</button>
+        <div className="space-box50">
         </div>
-
+        <div>ログアウトシステム</div>
+        {(() => {
+            if (user == null) {
+            return <p>ログインへ</p> 
+            } else {
+                return <a href="/" onClick={logout}>ログアウト</a>
+            }
+        })()}
+        <div className="space-box50">
+        </div>
+        <div>POST</div>
         <ul>
-          {todos.map((todo, index) => {
-            return (
-              <li key={index}>
-                {todo}
-                {/* 削除ボタンを追加 */}
-                <button onClick={() => deleteTodo(index)}>x</button>
-              </li>
-            );
-          })}
+        {result.map((posts) => (
+          <>
+          <li>{posts.artistname}</li>
+          <li>{posts.genre}</li>
+          <li>{posts.status}</li>
+          </> 
+        ))}
         </ul>
-
         <style>{`
           h1 {
             text-align: center;
