@@ -2,8 +2,8 @@ import { useState } from "react";
 import { storage } from '../lib/db';
 import { db } from '../lib/db';
 import Head from 'next/head';
-import Link from 'next/link'
-import Layout from '../components/layout'
+import Link from 'next/link';
+import Layout from '../components/layout';
 
 
 const Post = () => {
@@ -54,7 +54,7 @@ const Post = () => {
       // data: firebase.firestore.FieldValue.serverTimestamp(),
       genre: "currentGenre",
       post: text,
-      image1: imgaurl,
+      image1: imganame + "a",
       // image2: {setImgbval},
       status: status,
     })

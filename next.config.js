@@ -12,8 +12,24 @@ module.exports = {
 
     return config;
   }
+
 };
 
+  // module.exports = {
+  //   images: {
+  //     domains: ['gs://creamo-d1efd.appspot.com/'],
+  //   },
+  // }
+
+
+
+// const nextConfig = {
+//   images: {
+//     domains: ['gs://creamo-d1efd.appspot.com']
+//   }
+// }
+
+// module.exports = withPlugins([[withImages]], nextConfig)
 // const withCSS = require('@zeit/next-css')
 
 // module.exports = withCSS({
