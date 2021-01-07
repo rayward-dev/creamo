@@ -5,6 +5,9 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/layout'
 import firebase from '../lib/db';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+// import { faHeart } from '@fortawesome/free-regular-svg-icons';
 
 
 const App = () => {
@@ -16,6 +19,12 @@ const App = () => {
     // ④投稿ID+投稿データ+画像。画像はファイル名でstorageからDLURLを取得
     // ③上記取得後にそれぞれKeyを付け足して一つの配列にまとめる
     // ④その配列をループ処理して配置
+  // FontAwesomeIcon
+    // <i class="fas fa-heart"></i>
+    // <i class="far fa-heart"></i>
+    // <i class="fas fa-thumbs-up"></i>
+    // <i class="far fa-thumbs-up"></i>
+    // <FontAwesomeIcon icon={faHeart} size="lg" color="#fff" />
 
   // 変数定義
   const [user, setUser] = useState("");
@@ -102,12 +111,6 @@ const App = () => {
       try {
     
         const querySnapshot = await db.collection('posts').get() 
-        
-        // とりあえずまとめて取得
-        // var box = []
-        // box = querySnapshot.docs.map(postDoc => JSON.stringify(postDoc.data()))
-        // console.log(box)
-        // setResult(box)
 
         // 配列を整理して取得
         let data = []
@@ -119,7 +122,6 @@ const App = () => {
             },doc.data())
           )
         })
-        // console.log(data)
         setResult(data)
         return data
         
@@ -158,6 +160,9 @@ const App = () => {
           <Link href='/portedit' passHref>
             <a>ポートフォリオ編集ページ</a>
           </Link>
+          <Link href='/portfolio' passHref>
+            <a>ポートフォリオページ</a>
+          </Link>
           <Link href='/post' passHref>
             <a>投稿ページ</a>
           </Link>
@@ -173,70 +178,74 @@ const App = () => {
           })()}
           <div className="space-box50">
           </div>
-          <div>POST</div>
-          <ul>
-          {result.map((posts) => (
-            <>
-            <li>{posts.artistname}</li>
-            <li>{posts.genre}</li>
-            <li>{posts.status}</li>
-            </> 
-          ))}
-          </ul>
 
           <h2>ここから本番用デザイン</h2>
           <div className="container-wrap-left">
+            
+          {result.map((posts) => (
+            <>
             <div className="post-back">
-              <>
               <div className="space-box20">
               </div>
               <div className="post-area-head">
                 <div className="post-area-head-left">               
-                  <img src={urli} alt="アイコン" class="post-avatar" />         
+                  <img src={urli} alt="アイコン" className="post-avatar" />         
                 </div>
                 <div className="post-area-head-center">
                   <div className="post-artist-name">
-                    アーティストネーム
+                    {posts.artistname}
                   </div>
                   <div className="post-artist-genre">
-                    油絵画家、写真家
+                    {posts.genre}
                   </div>
                 </div>
                 <div className="post-area-head-right">
                   <div className="post-time">
-                    2020.12.01.01
+                    2020.12.01 01:20
+                  </div>
+                  <div className="space-box10">
                   </div>
                   <div className="post-status">
-                    構想中
+                    {posts.status}
                   </div>
                 </div>
               </div>
-              <div className="space-box10">
+              <div className="space-box20">
               </div>
               <div className="post-area-text">
                 とりあえず呟いておくか。
               </div>
+              <div className="space-box20">
+              </div>
               <div className="post-area-tag">
-                絵画、悩み 
+                # 絵画  # 悩み 
               </div>
               <div className="space-box30">
               </div>
               <div className="post-area-image">
                 <div className="post-area-image-left">
-                  <img src={urli} alt="アイコン" class="post-imagea" />
+                  <img src={urli} alt="アイコン" className="post-imagea" />
                 </div>
                 <div className="space-box30w">
                 </div>
                 <div className="post-area-image-right">
-                <img src={urli} alt="アイコン" class="post-imageb" />
+                <img src={urli} alt="アイコン" className="post-imageb" />
                 </div>
               </div>
               <div className="space-box30">
               </div>
               <div className="post-area-foot">
+                <div className="post-area-foot-left">
+                </div>
+                <div className="post-area-foot-right">
+                  作家詳細を見にいく
+                </div>
               </div>
-              </>
             </div>
+            </>
+          ))}
+            
+
           </div>
         </div>
       </div>
@@ -258,8 +267,9 @@ const App = () => {
         .post-back {
           width: 500px;
           border-radius: 7px;
-          border: 1px solid #787979;
+          border: 2px solid #787979;
           background-color: white;
+          margin-bottom: 30px;
         }
         .post-area-head {
           display: flex;
@@ -269,8 +279,8 @@ const App = () => {
         .post-area-head-left {
         }
         .post-avatar {
-          width: 60px;
-          height: 60px;
+          width: 70px;
+          height: 70px;
           border-radius: 5px;
           object-fit: cover;
         }
@@ -278,32 +288,48 @@ const App = () => {
           padding-left: 20px;
         }
         .post-artist-name {
-          font-family: Arial;
-          font-size: 14px;
-          font-weight: bold;
-          color: #616264;
+          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-size: 20px;
+          color: #212121;
         
         }
         .post-artist-genre {
-          font-family: Arial;
-          font-size: 12px;
-          color: #616264;
+          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-size: 16px;
+          color: #212121;
         }
         .post-area-head-right {
           margin-left: auto;
         }
         .post-time {
-
+          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-size: 10px;
+          color: #212121;
         }
         .post-status {
+          width: 90px;
+          height: 30px;
+          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-size: 14px;
+          border-radius: 4px;
+          color: white;
+          text-align: center;
+          line-height: 30px;
+          background-color: #5C5C5C;
 
         }
         .post-area-text {
           padding: 0 20px;
+          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-size: 16px;
+          color: #4A4949;
 
         }
         .post-area-tag {
           padding: 0 20px;
+          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-size: 14px;
+          color: #2871E6;
 
         }
         .post-area-image {
@@ -330,8 +356,21 @@ const App = () => {
 
         }
         .post-area-foot {
+          display: flex;
+          justify-content: space-between;
           height: 30px;
-          border-top: 1px solid #787979;
+          border-top: 2px solid #787979;
+        }
+        .post-area-foot-left {
+
+        }
+        .post-area-foot-right {
+          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-size: 12px;
+          color: #818080;
+          line-height: 30px;
+          padding-right: 20px;
+
         }
 
       `}</style>
