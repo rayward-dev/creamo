@@ -1,25 +1,119 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import Link from 'next/link'
+import { useRouter } from 'next/router'
+import firebase from '../lib/db';
+
+
+
+
 
 const Layout = (props) => {
+
+  const [user, setUser] = useState("");
+  const auth = firebase.auth();
+  const router = useRouter();
+
+  useEffect(() => {
+     authCheck(user);
+  },[user]);
+
+  const authCheck = () => {
+    (async () => {
+      try {
+        let userBox = "";
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            console.log("Layoutサインインしてます");
+            userBox = auth.currentUser;
+            setUser(userBox);
+          }
+          else {
+            console.log("Layoutサインインしてません");
+          }
+        })
+      } catch (err) {
+        console.log(`Error: ${JSON.stringify(err)}`)
+      }
+    })()
+  }
+  // ログアウトメソッド
+  const logout = (e) => {
+    e.preventDefault();
+    firebase.auth().signOut()
+    location.reload();
+    router.push('/');
+  }
+
   return (
     <>
       <div className="layout-wrap">
         <div className="border-box-bottom">
           <div className="header-box">
             <div className="flex-wrap-head">
-              <Link href="/">
+              <Link href="/" passHref>
                 <div className="header-title">
                   CREAMO
                 </div>
               </Link>
-              <Link href="/">
-                <div className="top-back">
-                  一覧に戻る
+              { !user == "" && (
+              <>
+                <div className="header-top-btn-left">
+                  マイページ
+                </div>
+                <div className="header-top-btn">
+                  <a onClick={logout}>ログアウト</a>
+                </div>
+              </>
+              )}
+              { user == "" && (
+              <>
+              <Link href="/signup">
+                <div className="header-top-btn-left">
+                  新規登録
                 </div>
               </Link>
+              <Link href="/login">
+                <div className="header-top-btn">
+                  ログイン
+                </div>
+              </Link>
+              </>
+              )}
             </div>
           </div>
+        
+          <div className="border-box-top">
+            <div className="header-box">
+              <div className="flex-wrap-head-second">
+                <div className="post-btn-area">
+                { !user == "" && (
+                  <Link href="/post" passHref>
+                    <div className="post-btn-box">
+                        投稿する
+                    </div>
+                  </Link>
+                )}
+                { user == "" && (
+                  <Link href="/login">
+                  <div className="post-btn-box">
+                      投稿する
+                  </div>
+                  </Link>
+                )}
+                </div>
+                <div className="header-top-btn-second">
+                  作家一覧
+                </div>
+                <div className="header-top-btn-second">
+                  イベント
+                </div>
+                <div className="header-top-btn-second">
+                  使い方
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {props.children}
@@ -55,7 +149,12 @@ const Layout = (props) => {
         .border-box-bottom {
           position: fixed;
           width: 100%;
-          border-bottom: 2px solid gray;
+          border-bottom: 1px solid gray;
+          background-color: white;
+        }
+        .border-box-top {
+          width: 100%;
+          border-top: 1px solid gray;
           background-color: white;
         }
         .header-box {
@@ -65,7 +164,10 @@ const Layout = (props) => {
         }
         .flex-wrap-head {
           display: flex;
-          flex-direction: row;
+          justify-content: flex-start;
+        }
+        .flex-wrap-head-second {
+          display: flex;
           justify-content: space-between;
         }
         .header-title {
@@ -75,14 +177,57 @@ const Layout = (props) => {
           line-height: 40px;
           cursor: pointer;
         }
-        .top-back {
+        .post-btn-area {
+          position: relative;
+          width: 90px;
+        }
+        .post-btn-box {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 90px;
+          height: 25px;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
+          font-size: 12px;
+          border-radius: 3px;
+          color: white;
+          text-align: center;
+          padding-top: 2px;
+          background-color: #240A2C;
+          cursor: pointer;
+        }
+        .header-top-btn-left {
           color: grey;
           font-family: Arial;
           font-size: 14px;
           line-height: 40px;
           cursor: pointer;
+          margin-left: auto;
         }
-        .top-back:hover {
+        .header-top-btn-left:hover {
+          color: #240A2C;
+        }
+        .header-top-btn {
+          color: grey;
+          font-family: Arial;
+          font-size: 14px;
+          line-height: 40px;
+          cursor: pointer;
+          padding-left: 50px;
+        }
+        .header-top-btn:hover {
+          color: #240A2C;
+        }
+        .header-top-btn-second {
+          color: grey;
+          font-family: Arial;
+          font-size: 12px;
+          line-height: 40px;
+          cursor: pointer;
+          padding-left: 50px;
+          white-space: nowrap;
+        }
+        .header-top-btn-second:hover {
           color: #240A2C;
         }
 

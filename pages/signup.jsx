@@ -1,8 +1,7 @@
 import { useState } from "react";
 import Head from 'next/head';
 import { useRouter } from 'next/router'
-import Layout from '../components/layout';
-// import { auth } from '../lib/db';
+import Link from 'next/link'
 import firebase from '../lib/db';
 
 const SignUp = () => {
@@ -15,8 +14,8 @@ const SignUp = () => {
     e.preventDefault();
     try {
       firebase.auth().createUserWithEmailAndPassword(email, password)
-      alert('送信しました');
-      router.push('/');
+      alert('新規登録しました');
+      router.push('/name');
     }
     catch(error) {
       alert('送信に失敗しました');
@@ -37,7 +36,7 @@ const SignUp = () => {
         <title>新規登録</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
+      
       <div className="wrap">
         <div className="container">
           <div className="title">新規登録
@@ -77,6 +76,20 @@ const SignUp = () => {
             <button type="submit" className="regist-btn">登録する
             </button>
           </form>
+          <div className="space-box30">
+          </div>
+          <div className="top-back">
+            <Link href="/login">
+              <a>ログイン画面へ</a>
+            </Link>
+          </div>
+          <div className="space-box20">
+          </div>
+          <div className="top-back">
+            <Link href="/">
+              <a>一覧に戻る</a>
+            </Link>
+          </div> 
         </div>
       </div>
       <style>{`
@@ -86,8 +99,18 @@ const SignUp = () => {
             color: #616264;
             padding-bottom: 50px;
           }
+          .top-back {
+            color: grey;
+            font-family: Arial;
+            font-size: 14px;
+            line-height: 40px;
+            cursor: pointer;
+          }
+          .top-back:hover {
+            color: #240A2C;
+          }
         `}</style>
-        </Layout>
+        
     </>
   )
 }

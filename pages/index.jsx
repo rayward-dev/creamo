@@ -1,12 +1,12 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect,useRef } from "react";
 import { useRouter } from 'next/router'
 import { db } from '../lib/db';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/layout'
 import firebase from '../lib/db';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faHeart } from '@fortawesome/free-solid-svg-icons';
 // import { faHeart } from '@fortawesome/free-regular-svg-icons';
 
 
@@ -26,13 +26,9 @@ const App = () => {
     // <i class="far fa-thumbs-up"></i>
     // <FontAwesomeIcon icon={faHeart} size="lg" color="#fff" />
 
-  // 変数定義
-  const [user, setUser] = useState("");
+  const [current, setCurrent] = useState("");
   const [result, setResult] = useState([]);
   const [urli, setUrli] = useState("");
-  console.log(user);
-  console.log(result);
-  console.log(urli);
 
   // FirebaseAuthの初期化
   const auth = firebase.auth();
@@ -42,23 +38,37 @@ const App = () => {
   // Routerのインスタンス生成
   const router = useRouter();
 
+  const mounted = useRef(false)
   // ページ表示と同時に発火
   useEffect(() => {
-    // 変数定義
-
-    // 一覧情報を取得
-    mainIndex();
-    authCheck();
-
-  // storageから画像urlの取得(useEffect内厳守)→これは指定の画像１つだけ
-  let ref = firebase.storage().ref().child('post/hands-423794_640.jpg');
-  let urlBox = ""
-    ref.getDownloadURL().then((url) => {
-      // document.getElementById('imga1').src = url;
-      urlBox = url;
-      setUrli(urlBox);
-    });
-  },[]);
+    if(mounted.current) {
+      // Update時の処理
+      console.log(current);
+      console.log(result);
+      console.log('Updated!')
+    } else {
+      // Mount時の処理
+      mainIndex(result);
+      authCheck(current);
+      console.log(current);
+      console.log(result);
+      console.log('Mounted!')
+      mounted.current = true
+    }
+      // mainIndex();
+      // authCheck();
+      // console.log(current);
+      // console.log(result);
+      
+      // storageから画像urlの取得(useEffect内厳守)→これは指定の画像１つだけ
+      // let ref = firebase.storage().ref().child('post/hands-423794_640.jpg');
+      // let urlBox = ""
+      // ref.getDownloadURL().then((url) => {
+      //   urlBox = url;
+      //   setUrli(urlBox);
+      // });
+    
+  },[result,current]);
 
   // ログイン情報とCurrentUserを取得
   const authCheck = () => {
@@ -71,15 +81,12 @@ const App = () => {
             console.log("サインインしてます");
             userBox = auth.currentUser;
             userUid = userBox.uid;
-            console.log(userUid);
-            setUser(userBox);
-            return userBox;
+            // setUser(userBox);
+            setCurrent(userUid);
+            return userUid
           }
           else {
             console.log("サインインしてません");
-            userBox = auth.currentUser;
-            setUser(userBox);
-            return userBox;
           }
         })
       } catch (err) {
@@ -87,34 +94,15 @@ const App = () => {
       }
     })()
   }
-  
-  // storageからデータ取得
-  // const getStorage = () => {
-  //   (async () => {
-  //     try {
-
-  //       const storageRef = storage.ref();
-
-  //       const url = storageRef.child('images/photo_1.png').getDownloadURL()
-        
-
-  //     } catch (err) {
-  //       console.log(`Error: ${JSON.stringify(err)}`)
-  //     }
-  //   })()
-  // }
-      
-
+    
   // firestoreからデータ取得
   const mainIndex = () => {
     (async () => {
       try {
-    
-        const querySnapshot = await db.collection('posts').get() 
-
+        const querySnapsho = await db.collection('posts').get() 
         // 配列を整理して取得
         let data = []
-        querySnapshot.forEach((doc) =>
+        querySnapsho.forEach((doc) =>
         {
           data.push(
             Object.assign({
@@ -135,12 +123,6 @@ const App = () => {
     })()
   }
 
-  // ログアウトメソッド
-  const logout = () => {
-    firebase.auth().signOut()
-    router.push('/');
-  }
-
   return (
     <>
       <Head>
@@ -151,12 +133,6 @@ const App = () => {
       <div className="wrap">
         <div className="container">
           <h1>一覧ページ</h1>
-          <Link href="/signup">
-            <a>新規登録ページ</a>
-          </Link>
-          <Link href="/login">
-            <a>ログインページ</a>
-          </Link>
           <Link href='/portedit' passHref>
             <a>ポートフォリオ編集ページ</a>
           </Link>
@@ -166,16 +142,9 @@ const App = () => {
           <Link href='/post' passHref>
             <a>投稿ページ</a>
           </Link>
-          <div className="space-box50">
-          </div>
-          <div>ログアウトシステム</div>
-          {(() => {
-              if (user == null) {
-              return <p>ログインへ</p> 
-              } else {
-                  return <a href="/" onClick={logout}>ログアウト</a>
-              }
-          })()}
+          <Link href='/name' passHref>
+            <a>namaページ</a>
+          </Link>
           <div className="space-box50">
           </div>
 
@@ -288,13 +257,13 @@ const App = () => {
           padding-left: 20px;
         }
         .post-artist-name {
-          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           font-size: 20px;
           color: #212121;
         
         }
         .post-artist-genre {
-          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           font-size: 16px;
           color: #212121;
         }
@@ -302,32 +271,31 @@ const App = () => {
           margin-left: auto;
         }
         .post-time {
-          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           font-size: 10px;
           color: #212121;
         }
         .post-status {
           width: 90px;
           height: 30px;
-          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           font-size: 14px;
           border-radius: 4px;
           color: white;
           text-align: center;
           line-height: 30px;
           background-color: #5C5C5C;
-
         }
         .post-area-text {
           padding: 0 20px;
-          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           font-size: 16px;
           color: #4A4949;
 
         }
         .post-area-tag {
           padding: 0 20px;
-          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           font-size: 14px;
           color: #2871E6;
 
@@ -365,7 +333,7 @@ const App = () => {
 
         }
         .post-area-foot-right {
-          font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+          font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           font-size: 12px;
           color: #818080;
           line-height: 30px;

@@ -1,106 +1,150 @@
-import { useState } from "react";
+import { useState,useEffect,useRef } from "react";
+import { useRouter } from 'next/router'
 import { storage } from '../lib/db';
 import { db } from '../lib/db';
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '../components/layout';
-
+import firebase from '../lib/db';
 
 const Post = () => {
   
-  // フォームで入力された値を入れる箱
-  // const [idval, setIdval] = useState("");
-  // const [artistnameval, setArtistnameval] = useState("");
   const [text, setText] = useState("");
   const [imgaval, setImgaval] = useState("");
   const [imganame, setImganame] = useState("");
-  const [imgaurl, setImgaurl] = useState("");
-
+  const [imgbval, setImgbval] = useState("");
   const [imgbname, setImgbname] = useState("");
+  const [tags, setTags] = useState([]);
 
-  // selectを必ず初期値を決めておく
+  // selectは必ず初期値を決めておく
   const [status, setStatus] = useState("構想中");
-  // Hooksはbindいらない
-  // this.handleChange = this.handleChange.bind(this);
-  // this.handleSubmit = this.handleSubmit.bind(this);
+  const [current, setCurrent] = useState("");
+
+  const auth = firebase.auth();
+  const router = useRouter();
+
+  const mounted = useRef(false)
+
+  useEffect(() => {
+    if(mounted.current) {
+      // Update時の処理
+      console.log(current);
+    } else {
+      // Mount時の処理
+      authCheck(current);
+      console.log(current);
+      mounted.current = true
+    }
+  },[current]);
+
+  const authCheck = () => {
+    (async () => {
+      try {
+        let userBox = "";
+        let userUid = "";
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            console.log("サインインしてます");
+            userBox = auth.currentUser;
+            userUid = userBox.uid;
+            setCurrent(userUid);
+            return userUid
+          }
+          else {
+            console.log("サインインしてません");
+          }
+        })
+      } catch (err) {
+        console.log(`Error: ${JSON.stringify(err)}`)
+      }
+    })()
+  }
 
   const phandleChange = (e) => {
     // Keyを増やして登録もできる
-    // setTextval({textval: e.target.value});
+    // setText({textval: e.target.value});
     setText(e.target.value);
     console.log(text);
+  };
+  const thandleChange = (e) => {
+    let tagBox = e.target.value;
+    let kugiri = ",";
+    let tagSplit = tagBox.split(kugiri);
+    setTags(tagSplit);
+    console.log(tagBox);
+    console.log(tagSplit);
   };
   const shandleChange = (e) => {
     setStatus(e.target.value);
     console.log(status);
   };
   const iahandleChange = (e) => {
-    const imgaval = e.target.files[0];
-    setImgaval(imgaval);
-    console.log(imgaval);
-    const imganame = imgaval.name
-    setImganame(imganame);
-    console.log(imganame);
-    const imgaurl = "gs://creamo-d1efd.appspot.com/" + imganame
-    setImgaurl(imgaurl);
-    console.log(imgaurl);
+    let imgaBox = e.target.files[0];
+    setImgaval(imgaBox);
+    console.log(imgaBox);
+    let imgaNbox = imgaBox.name
+    setImganame(imgaNbox);
+    console.log(imgaNbox);
+  };
+  const ibhandleChange = (e) => {
+    if (!imgaval == "") {
+      let imgbBox = e.target.files[0];
+      setImgbval(imgbBox);
+      console.log(imgbBox);
+      let imgbNbox = imgbBox.name
+      setImgbname(imgbNbox);
+      console.log(imgbNbox);
+    } else {
+      e.target.value = null;
+      alert('画像1を入力してください');
+    }
+    
   };
 
   const handleSubmit = (e) => {
     // firestoreに保存
-    db.collection('posts').add({
-      artistname: "current",
-      avatar: "currentImage",
-      // data: firebase.firestore.FieldValue.serverTimestamp(),
-      genre: "currentGenre",
+    db.collection('users').doc(current).collection('posts').add({
+      data: firebase.firestore.FieldValue.serverTimestamp(),
       post: text,
-      image1: imganame + "a",
-      // image2: {setImgbval},
+      image1: imganame,
+      image2: imgbname,
       status: status,
+      tags: tags,
     })
+    // db.collection('users').doc(current).collection('posts').doc('tags').set({
+
+    // })
 
     // firestorageにアップロード
-    const storageRef = storage.ref().child(`post/${imganame}`);
-    
-    storageRef.put(imgaval)
-    .then = () => {
-    //  console.log("送信されました");
-    storageRef.on(
-      firebase.storage.TaskEvent.STATE_CHANGED,
-      next,
-      error,
-      complete
-    );
-    };
-    // const uploadTask = storage.put(imgaval);
-    // const uploadTask = storage.ref().put(imgaval);
+    if (!imgaval == "" && imgbval == "") {
+      const storageRef = storage.ref().child(`${current}/posts/${imganame}`);  
+      storageRef.put(imgaval)
+      .then = () => {
+      console.log("画像１が送信されました");
+      };
+    }
+    else if (!imgaval == "" && !imgbval == ""){
+      const imgarr = [
+        {name: imganame, val: imgaval},
+        {name: imgbname, val: imgbval}
+      ]
+      imgarr.forEach(result => {
+        const storageRef = storage.ref().child(`${current}/posts/${result.name}`);  
+        storageRef.put(result.val)
+        .then = () => {
+        console.log(`${result.name}が送信されました`);
+        };
+      })
+
+    }
+    else {
+      console.log("画像はありません");
+    }
 
     e.preventDefault();
+    router.push('/');
   };
-
-  const next = snapshot => {
-    // 進行中のsnapshotを得る
-    // アップロードの進行度を表示
-    const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    console.log(percent + "% done");
-    console.log(snapshot);
-  };
-  const error = error => {
-    // エラーハンドリング
-    console.log(error);
-  };
-  const complete = () => {
-    console.log("アップロード完了");
-    // 完了後の処理
-    // 画像表示のため、アップロードした画像のURLを取得
-    // storage
-    //   .ref("images")
-    //   .child(imganame)
-    //   .getDownloadURL()
-    //   .then(fireBaseUrl => {
-    //     setImgaUrl(fireBaseUrl);
-    //   });
-  };
+  
 
   return (
     <>
@@ -111,6 +155,8 @@ const Post = () => {
       <Layout>
       <div className="wrap">
         <div className="container">
+          <div className="space-box50">
+          </div>
           <div className="title">投稿画面
           </div>
           <form onSubmit={handleSubmit}>
@@ -135,12 +181,10 @@ const Post = () => {
                   name="image1" 
                   id="image-file"
                   className="file-form"
-                  value={setImgaurl.value}
+                  value={setImgaval.value}
                   onChange={iahandleChange}
                 />
               </label>
-
-              <img src={imgaurl} alt="uploaded" />
 
               <label className="file-label">画像2
                 <input 
@@ -148,15 +192,28 @@ const Post = () => {
                   name="image2" 
                   id="image-file"
                   className="file-form"
-                  // value={setImgbval}
-                  // onChange={handleChange}
+                  value={setImgbval.value}
+                  onChange={ibhandleChange}
                 />
               </label>
             </div>
+            <div className="space-box50">
+            </div>
 
-
-            
-
+            <div className="form-box">
+              <label className="label-text">タグ
+                <input 
+                  type="text"
+                  name="tag"
+                  className="form"
+                  placeholder="例) タイトル未定,山,空"
+                  value={setTags.value}
+                  onChange={thandleChange}
+                />
+              </label>
+            </div>
+            <div className="tag-note">※複数登録する場合は「,」で区切ってください
+            </div>
             <div className="space-box50">
             </div>
             <div className="form-box">
@@ -226,6 +283,13 @@ const Post = () => {
             font-weight: bold;
             color: #616264;
             line-height: 20px;
+          }
+          .tag-note {
+            font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
+            font-size: 12px;
+            color: #212121;
+            text-align: center;
+            padding-top: 3px;
           }
           .top-back {
             color: grey;

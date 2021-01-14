@@ -160,7 +160,7 @@ const PortFolio = () => {
             border: 2px solid #787979;
             background-color: white;
             padding: 0 20px;
-            font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+            font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
           }
           .intro-back {
   
@@ -195,7 +195,7 @@ const PortFolio = () => {
           .intro-right-stutas {
             width: 90px;
             height: 30px;
-            font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+            font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
             font-size: 14px;
             border-radius: 4px;
             color: white;
@@ -238,7 +238,7 @@ const PortFolio = () => {
             background-color: #272727;
             color: white;
             padding: 0 20px;
-            font-family: 'Hiragino Sans','ヒラギノ角ゴシック','Yu Gothic','游ゴシック',sans-serif;
+            font-family: Hiragino Sans,ヒラギノ角ゴシック,Yu Gothic,游ゴシック,sans-serif;
             padding: 50px;
           }
           .opus-box {
