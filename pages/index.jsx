@@ -1,5 +1,4 @@
 import { useState,useEffect,useRef } from "react";
-import { useRouter } from 'next/router'
 import { db } from '../lib/db';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -28,47 +27,24 @@ const App = () => {
 
   const [current, setCurrent] = useState("");
   const [result, setResult] = useState([]);
-  const [urli, setUrli] = useState("");
+  console.log(result);
 
-  // FirebaseAuthの初期化
   const auth = firebase.auth();
-   // FirebaseStorgeの初期化
-  const storage = firebase.storage();
-
-  // Routerのインスタンス生成
-  const router = useRouter();
-
   const mounted = useRef(false)
-  // ページ表示と同時に発火
+
   useEffect(() => {
     if(mounted.current) {
       // Update時の処理
-      console.log(current);
-      console.log(result);
+      mainIndex();
       console.log('Updated!')
     } else {
       // Mount時の処理
-      mainIndex(result);
       authCheck(current);
-      console.log(current);
-      console.log(result);
       console.log('Mounted!')
       mounted.current = true
     }
-      // mainIndex();
-      // authCheck();
-      // console.log(current);
-      // console.log(result);
-      
-      // storageから画像urlの取得(useEffect内厳守)→これは指定の画像１つだけ
-      // let ref = firebase.storage().ref().child('post/hands-423794_640.jpg');
-      // let urlBox = ""
-      // ref.getDownloadURL().then((url) => {
-      //   urlBox = url;
-      //   setUrli(urlBox);
-      // });
     
-  },[result,current]);
+  },[current]);
 
   // ログイン情報とCurrentUserを取得
   const authCheck = () => {
@@ -81,7 +57,6 @@ const App = () => {
             console.log("サインインしてます");
             userBox = auth.currentUser;
             userUid = userBox.uid;
-            // setUser(userBox);
             setCurrent(userUid);
             return userUid
           }
@@ -99,24 +74,59 @@ const App = () => {
   const mainIndex = () => {
     (async () => {
       try {
-        const querySnapsho = await db.collection('posts').get() 
-        // 配列を整理して取得
-        let data = []
-        querySnapsho.forEach((doc) =>
-        {
-          data.push(
-            Object.assign({
-              id: doc.id
-            },doc.data())
-          )
+        //まずはusersコレクションの全userIDを取得
+        const usersUid = await db.collection('users').get()
+        const usersUidArr = usersUid.docs.map(userDoc => userDoc.id)
+        // console.log(usersUidArr)
+        //forEachのネスト内ではFirebaseのdocなど取得できない(Promiseが付く)
+        //asyncだけだとPromiseのまま動かない。awaitつけて成功
+        //postsとusernameはuserUIDだけでは関連付けできないのでpostsの中にもuserデータを格納しておく
+        let resultBox = [];
+        //userUIDごとのpostsデータを取得
+        usersUidArr.forEach((userId) => {
+          (async () => {
+            //userUIDのposts情報の取得
+            const postsData = await db.collection('users').doc(userId).collection('posts').get()
+            //posts情報を使えるデータだけの配列になるようにバラす
+            postsData.forEach((postDoc) => {
+              let postData = postDoc.data()
+              //その中のavatarデータとimageデータ(ファイル名)をuseridを使って抜き出す
+              const userID = postData.userid
+              const avatarData = postData.avatar
+              const imageData1 = postData.image1
+              const imageData2 = postData.image2
+              //そのファイル名を使ってDLURLをそれぞれkeyをつけて取得
+              let avatarref = firebase.storage().ref().child(`${userID}/portfolio/avatar/${avatarData}`);
+              let img1ref = firebase.storage().ref().child(`${userID}/posts/${imageData1}`);
+              let img2ref = firebase.storage().ref().child(`${userID}/posts/${imageData2}`);
+              //DLURLをぶちこむ
+              avatarref.getDownloadURL().then((url) => {
+                postData.avatar = url;
+              });
+              if (!img1ref == "") {
+              img1ref.getDownloadURL().then((url) => {
+                postData.image1 = url;
+              });
+              } else {
+                console.log("画像１はありません")
+              }
+              if (!img2ref == "") {
+              avatarref.getDownloadURL().then((url) => {
+                postData.image2 = url;
+              });
+              } else {
+                console.log("画像２はありません")
+              }
+              // console.log(postData);
+              //一つのオブジェクトにまとめる
+              resultBox.push(postData)
+            })
+            //resultに反映させる
+            // console.log(resultBox);
+            setResult(resultBox);
+          })()
         })
-        setResult(data)
-        return data
-        
-        // 公式の取得
-        // querySnapshot.forEach((postDoc) => {
-        //   console.log(JSON.stringify(postDoc.data()))
-        // })
+
       } catch (err) {
         console.log(`Error: ${JSON.stringify(err)}`)
       }
@@ -151,54 +161,54 @@ const App = () => {
           <h2>ここから本番用デザイン</h2>
           <div className="container-wrap-left">
             
-          {result.map((posts) => (
+          {result.map((post) => { 
             <>
             <div className="post-back">
               <div className="space-box20">
               </div>
               <div className="post-area-head">
                 <div className="post-area-head-left">               
-                  <img src={urli} alt="アイコン" className="post-avatar" />         
+                  <img src={post.avatar} alt="アイコン" className="post-avatar" />         
                 </div>
                 <div className="post-area-head-center">
                   <div className="post-artist-name">
-                    {posts.artistname}
+                    {post.artistname}
                   </div>
                   <div className="post-artist-genre">
-                    {posts.genre}
+                    {post.genre}
                   </div>
                 </div>
                 <div className="post-area-head-right">
                   <div className="post-time">
-                    2020.12.01 01:20
+                    {post.data}
                   </div>
                   <div className="space-box10">
                   </div>
                   <div className="post-status">
-                    {posts.status}
+                    {post.status}
                   </div>
                 </div>
               </div>
               <div className="space-box20">
               </div>
               <div className="post-area-text">
-                とりあえず呟いておくか。
+                {post.post}
               </div>
               <div className="space-box20">
               </div>
               <div className="post-area-tag">
-                # 絵画  # 悩み 
+                {post.tags} 
               </div>
               <div className="space-box30">
               </div>
               <div className="post-area-image">
                 <div className="post-area-image-left">
-                  <img src={urli} alt="アイコン" className="post-imagea" />
+                  <img src={post.image1} alt="アイコン" className="post-imagea" />
                 </div>
                 <div className="space-box30w">
                 </div>
                 <div className="post-area-image-right">
-                <img src={urli} alt="アイコン" className="post-imageb" />
+                <img src={post.image2} alt="アイコン" className="post-imageb" />
                 </div>
               </div>
               <div className="space-box30">
@@ -212,8 +222,8 @@ const App = () => {
               </div>
             </div>
             </>
-          ))}
-            
+            })
+            }
 
           </div>
         </div>

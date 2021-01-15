@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect,useRef } from "react";
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import firebase from '../lib/db';
@@ -10,11 +10,23 @@ import firebase from '../lib/db';
 const Layout = (props) => {
 
   const [user, setUser] = useState("");
+
   const auth = firebase.auth();
+  const mounted = useRef(false)
   const router = useRouter();
 
+  // useEffect(() => {
+  //    authCheck(user);
+  // },[user]);
+
   useEffect(() => {
-     authCheck(user);
+    if(mounted.current) {
+      // Update時の処理
+    } else {
+      // Mount時の処理
+      authCheck(user);
+      mounted.current = true
+    }
   },[user]);
 
   const authCheck = () => {

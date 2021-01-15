@@ -9,30 +9,35 @@ import firebase from '../lib/db';
 
 const Post = () => {
   
+  //フォームで送信する変数
   const [text, setText] = useState("");
   const [imgaval, setImgaval] = useState("");
   const [imganame, setImganame] = useState("");
   const [imgbval, setImgbval] = useState("");
   const [imgbname, setImgbname] = useState("");
   const [tags, setTags] = useState([]);
-
-  // selectは必ず初期値を決めておく
-  const [status, setStatus] = useState("構想中");
+  const [status, setStatus] = useState("構想中"); // selectBOXだからは必ず初期値を決めておく
+  //ユーザー情報
   const [current, setCurrent] = useState("");
+  const [name, setName] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [genre, setGenre] = useState("");
+
 
   const auth = firebase.auth();
   const router = useRouter();
-
   const mounted = useRef(false)
 
+  //レンダー時に呼び出すやつ
   useEffect(() => {
     if(mounted.current) {
       // Update時の処理
-      console.log(current);
+      userData(current);
+      console.log('Updated!')
     } else {
       // Mount時の処理
       authCheck(current);
-      console.log(current);
+      console.log('Mounted!')
       mounted.current = true
     }
   },[current]);
@@ -48,6 +53,7 @@ const Post = () => {
             userBox = auth.currentUser;
             userUid = userBox.uid;
             setCurrent(userUid);
+            console.log(userUid);
             return userUid
           }
           else {
@@ -60,16 +66,41 @@ const Post = () => {
     })()
   }
 
+  const userData = () => {
+    (async () => {
+      try {
+        const userRef = db.collection('users').doc(current)
+        const userDoc = await userRef.get() 
+        if (userDoc.exists) {
+          console.log(userDoc.data());
+          const userName = userDoc.get('artistname');
+          console.log(userDoc.get('artistname'));
+          const avatarBox = userDoc.get('avatar');
+          console.log(userDoc.get('avatar'));
+          const genreBox = userDoc.get('genre');
+          console.log(userDoc.get('genre'));
+          setName(userName);
+          setAvatar(avatarBox);
+          setGenre(genreBox);
+        } else {
+          console.log('No such document!')
+        }
+      
+      } catch (err) {
+        console.log(`Error: ${JSON.stringify(err)}`)
+      }
+    })()
+  }
+
   const phandleChange = (e) => {
-    // Keyを増やして登録もできる
-    // setText({textval: e.target.value});
+    // Keyを増やして登録もできるsetText({textval: e.target.value});とか
     setText(e.target.value);
     console.log(text);
   };
   const thandleChange = (e) => {
     let tagBox = e.target.value;
     let kugiri = ",";
-    let tagSplit = tagBox.split(kugiri);
+    let tagSplit = tagBox.split(kugiri); //区切った文字列で配列にして保存する
     setTags(tagSplit);
     console.log(tagBox);
     console.log(tagSplit);
@@ -87,6 +118,7 @@ const Post = () => {
     console.log(imgaNbox);
   };
   const ibhandleChange = (e) => {
+    //画像２だけで送信できちゃうと気持ち悪いからアラート飛ばして消去する
     if (!imgaval == "") {
       let imgbBox = e.target.files[0];
       setImgbval(imgbBox);
@@ -98,24 +130,24 @@ const Post = () => {
       e.target.value = null;
       alert('画像1を入力してください');
     }
-    
   };
 
   const handleSubmit = (e) => {
     // firestoreに保存
     db.collection('users').doc(current).collection('posts').add({
       data: firebase.firestore.FieldValue.serverTimestamp(),
+      artistname: name,
+      avatar: avatar,
+      genre: genre,
       post: text,
       image1: imganame,
       image2: imgbname,
       status: status,
       tags: tags,
+      userid: current,
     })
-    // db.collection('users').doc(current).collection('posts').doc('tags').set({
 
-    // })
-
-    // firestorageにアップロード
+    // firestorageにアップロード。画像が１つと2つで処理は分岐させる
     if (!imgaval == "" && imgbval == "") {
       const storageRef = storage.ref().child(`${current}/posts/${imganame}`);  
       storageRef.put(imgaval)
@@ -123,6 +155,8 @@ const Post = () => {
       console.log("画像１が送信されました");
       };
     }
+    //同じ場所に複数アップロード
+    //ただの繰り返しだとうまくいかなかったから連想配列を多重にしてforEachで配ってみた
     else if (!imgaval == "" && !imgbval == ""){
       const imgarr = [
         {name: imganame, val: imgaval},
@@ -140,7 +174,6 @@ const Post = () => {
     else {
       console.log("画像はありません");
     }
-
     e.preventDefault();
     router.push('/');
   };

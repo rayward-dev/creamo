@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect,useRef } from "react";
 import { db } from '../lib/db';
 import { useRouter } from 'next/router'
 import { storage } from '../lib/db';
@@ -9,27 +9,39 @@ import firebase from '../lib/db';
 const Name = () => {
 
   //カレントユーザーを取得するための変数
-  const [user, setUser] = useState("");
   const [current, setCurrent] = useState("");
   console.log(current);
   //名前を保存するための変数
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("");
   const [avatarname, setAvatarname] = useState("");
+  const [genre, setgenre] = useState("");
 
-  //auth初期化
   const auth = firebase.auth();
-  // Routerのインスタンス生成
   const router = useRouter();
+  const mounted = useRef(false)
+
 
   useEffect(() => {
-    nameSave();
-    },[]
-  );
+    if(mounted.current) {
+      // Update時の処理
+      console.log('Updated!')
+    } else {
+      // Mount時の処理
+      nameSave();
+      console.log('Mounted!')
+      mounted.current = true
+    }
+  },[]);
+
+  // useEffect(() => {
+  //   nameSave();
+  // },[]);
+
 
   // ログインユーザーデータをfirebaseから取得
   const nameSave = () => {
-    // (async () => {
+    (async () => {
       try {
         let userBox = "";
         let currentBox ="";
@@ -38,13 +50,13 @@ const Name = () => {
             console.log("サインインしてます");
             userBox = auth.currentUser;
             currentBox = userBox.uid
-            setUser(userBox);
             setCurrent(currentBox);
             //firestoreにてuserコレクションにUIDサブコレクションを作成して保存
             db.collection('users').doc(currentBox).set({
               artistname: "NoName",
+              genre: "未定",
               })    
-              console.log("NoNameが保存されました");
+              console.log("NoNameと未定が保存されました");
           }
           else {
             console.log("サインインしてません");
@@ -53,18 +65,22 @@ const Name = () => {
       } catch (err) {
         console.log(`Error: ${JSON.stringify(err)}`)
       }
-    // })()
+    })()
   }
 
   const nhandleChange = (e) => {
     setName(e.target.value);
     console.log(name);
   };
+  const ghandleChange = (e) => {
+    setgenre(e.target.value);
+    console.log(genre);
+  };
   const ahandleChange = (e) => {
-    const avatarBox = e.target.files[0];
+    let avatarBox = e.target.files[0];
     setAvatar(avatarBox);
     console.log(avatar);
-    const avatarnameBox = avatarBox.name
+    let avatarnameBox = avatarBox.name
     setAvatarname(avatarnameBox);
     console.log(avatarname);
   };
@@ -73,6 +89,7 @@ const Name = () => {
     // firestoreに保存
     db.collection('users').doc(current).set({
       artistname: name,
+      genre: genre,
       avatar: avatarname,
     })
     if (!avatar == "") {
@@ -134,6 +151,22 @@ const Name = () => {
             </div>
             <div className="space-box50">
             </div>
+            <div className="form-box">
+              <label className="label-text">ジャンル
+                <input 
+                  type="text"
+                  name="genre" 
+                  className="form"
+                  placeholder="作品のジャンルを入力"
+                  maxLength="20"
+                  value={setgenre.value}
+                  onChange={ghandleChange}
+                  required
+                />
+              </label>
+            </div>
+            <div className="space-box50">
+            </div>
             <button type="submit" className="regist-btn">登録する
             </button>
           </form>
@@ -144,7 +177,7 @@ const Name = () => {
               <a>スキップする</a>
             </Link>
           </div> 
-          <div className="">※名前は「NoName」で登録されます
+          <div className="">※名前は「NoName」、ジャンルは「未定」で登録されます
           </div>
         </div>
       </div>
