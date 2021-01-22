@@ -101,18 +101,21 @@ const App = () => {
               let img2ref = firebase.storage().ref().child(`${userID}/posts/${imageData2}`);
               //DLURLをぶちこむ
               avatarref.getDownloadURL().then((url) => {
-                postData.avatar = url;
+                // postData.avatarurl = url;
+                document.getElementById('avatarurl').src =url;
               });
               if (!img1ref == "") {
               img1ref.getDownloadURL().then((url) => {
-                postData.image1 = url;
+                // postData.image1url = url;
+                document.getElementById('image1url').src =url;
               });
               } else {
                 console.log("画像１はありません")
               }
               if (!img2ref == "") {
               avatarref.getDownloadURL().then((url) => {
-                postData.image2 = url;
+                // postData.image2url = url;
+                document.getElementById('image2url').src =url;
               });
               } else {
                 console.log("画像２はありません")
@@ -149,82 +152,74 @@ const App = () => {
           <Link href='/portfolio' passHref>
             <a>ポートフォリオページ</a>
           </Link>
-          <Link href='/post' passHref>
-            <a>投稿ページ</a>
-          </Link>
-          <Link href='/name' passHref>
-            <a>namaページ</a>
-          </Link>
           <div className="space-box50">
           </div>
-
           <h2>ここから本番用デザイン</h2>
           <div className="container-wrap-left">
             
-          {result.map((post) => { 
-            <>
-            <div className="post-back">
-              <div className="space-box20">
-              </div>
-              <div className="post-area-head">
-                <div className="post-area-head-left">               
-                  <img src={post.avatar} alt="アイコン" className="post-avatar" />         
+            {result.map((post) =>  (
+              <>
+              <div className="post-back">
+                <div className="space-box20">
                 </div>
-                <div className="post-area-head-center">
-                  <div className="post-artist-name">
-                    {post.artistname}
+                <div className="post-area-head">
+                  <div className="post-area-head-left"> 
+                    <img src="" id="avatarurl" alt="アバター画像" className="post-avatar" />         
                   </div>
-                  <div className="post-artist-genre">
-                    {post.genre}
+                  <div className="post-area-head-center">
+                    <div className="post-artist-name">
+                      {post.artistname}
+                    </div>
+                    <div className="post-artist-genre">
+                      {post.genre}
+                    </div>
+                  </div>
+                  <div className="post-area-head-right">
+                    <div className="post-time">
+                      日付
+                    </div>
+                    <div className="space-box10">
+                    </div>
+                    <div className="post-status">
+                      {post.status}
+                    </div>
                   </div>
                 </div>
-                <div className="post-area-head-right">
-                  <div className="post-time">
-                    {post.data}
+                <div className="space-box20">
+                </div>
+                <div className="post-area-text">
+                  {post.post}
+                </div>
+                <div className="space-box20">
+                </div>
+                <div className="post-area-tag">
+                  {post.tags} 
+                </div>
+                <div className="space-box30">
+                </div>
+                <div className="post-area-image">
+                  <div className="post-area-image-left">
+                    <img src="" id="image1url" alt="画像１" className="post-imagea" />
                   </div>
-                  <div className="space-box10">
+                  <div className="space-box30w">
                   </div>
-                  <div className="post-status">
-                    {post.status}
+                  <div className="post-area-image-right">
+                  <img src="" id="image2url" alt="画像２" className="post-imageb" />
+                  </div>
+                </div>
+                <div className="space-box30">
+                </div>
+                <div className="post-area-foot">
+                  <div className="post-area-foot-left">
+                  </div>
+                  <div className="post-area-foot-right">
+                    作家詳細を見にいく
                   </div>
                 </div>
               </div>
-              <div className="space-box20">
-              </div>
-              <div className="post-area-text">
-                {post.post}
-              </div>
-              <div className="space-box20">
-              </div>
-              <div className="post-area-tag">
-                {post.tags} 
-              </div>
-              <div className="space-box30">
-              </div>
-              <div className="post-area-image">
-                <div className="post-area-image-left">
-                  <img src={post.image1} alt="アイコン" className="post-imagea" />
-                </div>
-                <div className="space-box30w">
-                </div>
-                <div className="post-area-image-right">
-                <img src={post.image2} alt="アイコン" className="post-imageb" />
-                </div>
-              </div>
-              <div className="space-box30">
-              </div>
-              <div className="post-area-foot">
-                <div className="post-area-foot-left">
-                </div>
-                <div className="post-area-foot-right">
-                  作家詳細を見にいく
-                </div>
-              </div>
-            </div>
-            </>
-            })
+              </>
+            ))
             }
-
           </div>
         </div>
       </div>

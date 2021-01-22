@@ -69,9 +69,11 @@ const Layout = (props) => {
               </Link>
               { !user == "" && (
               <>
-                <div className="header-top-btn-left">
-                  マイページ
-                </div>
+                <Link href="/portfolio" passHref>
+                  <div className="header-top-btn-left">
+                    マイページ
+                  </div>
+                </Link>
                 <div className="header-top-btn">
                   <a onClick={logout}>ログアウト</a>
                 </div>
